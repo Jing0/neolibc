@@ -16,22 +16,22 @@
 extern "C" {
 #endif
 
-typedef struct {
+typedef struct sta_t{
     int allocatedSize;
     int size;
     int elemSize;
     void *elements;
-} stack_t;
+} sta_t;
 
 /*
  * The "Constructor" allocates a new stack
  */
-void stack_new(stack_t *s, int elemSize);
+void stack_new(sta_t *s, int elemSize);
 
 /*
  * The "Destructor" deallocates a allocated stack
  */
-void stack_destroy(stack_t *s);
+void stack_destroy(sta_t *s);
 
 /*
  * Used to add a value to the stack
@@ -39,7 +39,7 @@ void stack_destroy(stack_t *s);
  * otherwise funky stuff will happen.
  * If you give the stack_new function sizeof(int) valueAddress should point to an int.
  */
-void stack_push(stack_t *s, void *valueAddress);
+void stack_push(sta_t *s, void *valueAddress);
 
 /*
  * Used to retrive a value from the stack and removing it
@@ -49,7 +49,7 @@ void stack_push(stack_t *s, void *valueAddress);
  * otherwise funky stuff will happen.
  * If you give the stack_new function sizeof(int) valueAddress should point to an int.
  */
-void stack_pop(stack_t *s, void *returnAddress);
+void stack_pop(sta_t *s, void *returnAddress);
 
 /*
  * Used to retrive a value from the stack without removing it
@@ -59,7 +59,7 @@ void stack_pop(stack_t *s, void *returnAddress);
  * otherwise funky stuff will happen.
  * If you give the stack_new function sizeof(int) valueAddress should point to an int.
  */
-void stack_peek(stack_t *s, void *returnAddress);
+void stack_peek(sta_t *s, void *returnAddress);
 
 #ifdef  __cplusplus
 }
