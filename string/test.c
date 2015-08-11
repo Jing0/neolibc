@@ -28,11 +28,11 @@ int main(int argc, char const *argv[]) {
     str_println(substr);
     printf("trim after swap:\t");
     str_println(trim);
-    printf("is string empty?:\t%s\n", 
-        str_isempty(string) ? "Yes" : "No");
-    printf("is substr equal to string?:\t%s\n", 
-        str_compare(substr, string) ? "No" : "Yes");
-    
+    printf("is string empty?:\t%s\n",
+           str_isempty(string) ? "Yes" : "No");
+    printf("is substr equal to string?:\t%s\n",
+           str_compare(substr, string) ? "No" : "Yes");
+
     /* str_readFromFile */
     str_readFromFile(string, "Makefile");
     /* str_clone */

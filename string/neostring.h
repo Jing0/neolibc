@@ -29,6 +29,8 @@ typedef struct str_s {
     uint16_t capacity;
 } str_s;
 
+/* ==== Constructor and Destructor ==== */
+
 /*
  * Calls the constructor
  * allocates a new string
@@ -41,63 +43,7 @@ str_t str_new(void);
  */
 void str_destroy(str_t self);
 
-/*
- * Returns a clone of this instance
- */
-str_t str_clone(str_t self);
-
-/*
- * Returns a copy of the string, with leading and trailing whitespace omitted
- */
-str_t str_trim(str_t self);
-
-/*
- * Returns a substring [pos, pos + count).
- * If the requested substring extends past the end of the string, or if count == npos,
- * the returned substring is [pos, self->size).
- */
-str_t str_substr(str_t self, const int pos, const int count);
-
-/*
- * Sets the string value as the character array argument
- *
- * @Return value
- * 0 if successful, -1 otherwise
- */
-int str_set(str_t self, const char *string);
-
-/*
- * Sets the string value as the formated character array argument
- *
- * @Return value
- * 0 if successful, -1 otherwise
- */
-int str_setf(str_t self, const char *strformat, ... /* args */);
-
-/*
- * Clears the contents
- */
-void str_clear(str_t self);
-
-/*
- * Prints the string
- */
-void str_print(str_t self);
-
-/*
- * Prints the string and then terminates the line
- */
-void str_println(str_t self);
-
-/*
- * Causes this character sequence to be replaced by the reverse of the sequence
- */
-void str_reverse(str_t self);
-
-/*
- * Exchanges the contents of the str1 with those of str2
- */
-void str_swap(str_t str1, str_t str2);
+/* ========== Methods Summary ========== */
 
 /*
  * Appends the string representation of the char array argument to this string
@@ -108,17 +54,25 @@ void str_swap(str_t str1, str_t str2);
 int str_append(str_t self, const char *str);
 
 /*
- * Returns the length of this string
- */
-uint16_t str_length(str_t self);
-
-/*
- * Checks if the string has no characters
+ * Returns the char value at the specified pos
  *
  * @Return value
- * 1 if the string is empty, 0 otherwise
+ * the char value at the specified pos if not successful,
+ * -1 otherwise
+ * The first char value is at index 0.
+ *
  */
-int str_isempty(str_t self);
+char str_charAt(str_t self, int pos);
+
+/*
+ * Clears the contents
+ */
+void str_clear(str_t self);
+
+/*
+ * Returns a clone of this instance
+ */
+str_t str_clone(str_t self);
 
 /*
  * Compares two strings
@@ -128,6 +82,21 @@ int str_isempty(str_t self);
  * according as the string str1 is greater than, equal to, or less than the string str2
  */
 int str_compare(str_t str1, str_t str2);
+
+/*
+ * Returns a pointer to a null-terminated character array
+ * with data equivalent to those stored in the string
+ *
+ */
+char *str_cstr(str_t self);
+
+/*
+ * Removes specified characters [pos, pos + count) from the string
+ *
+ * @Return value
+ * 0 if characters removed successfully, -1 otherwise
+ */
+int str_erase(str_t self, const int pos, const int count);
 
 /*
  * Finds the first character ch, starting the search at pos
@@ -148,14 +117,6 @@ int str_findch(str_t self, const char ch, const int pos);
 int str_findstr(str_t self, const char *str, const int pos);
 
 /*
- * Removes specified characters [pos, pos + count) from the string
- *
- * @Return value
- * 0 if characters removed successfully, -1 otherwise
- */
-int str_erase(str_t self, const int pos, const int count);
-
-/*
  * Inserts characters into the string
  *
  * @Return value
@@ -164,12 +125,27 @@ int str_erase(str_t self, const int pos, const int count);
 int str_insert(str_t self, const int offset, const char *str);
 
 /*
- * Replaces the part of the string indicated by [pos, pos + count) with a new string
+ * Checks if the string has no characters
  *
  * @Return value
- * 0 if characters inserted successfully, -1 otherwise
+ * 1 if the string is empty, 0 otherwise
  */
-int str_replace(str_t self, const int pos, const int count, const char *str);
+int str_isempty(str_t self);
+
+/*
+ * Returns the length of this string
+ */
+uint16_t str_length(str_t self);
+
+/*
+ * Prints the string
+ */
+void str_print(str_t self);
+
+/*
+ * Prints the string and then terminates the line
+ */
+void str_println(str_t self);
 
 /*
  * Set the string value as the content of the file at the given path
@@ -180,25 +156,50 @@ int str_replace(str_t self, const int pos, const int count, const char *str);
 int str_readFromFile(str_t self, const char *path);
 
 /*
- * Writes the string's value to the file named by path
+ * Replaces the part of the string indicated by [pos, pos + count) with a new string
+ *
+ * @Return value
+ * 0 if characters inserted successfully, -1 otherwise
+ */
+int str_replace(str_t self, const int pos, const int count, const char *str);
+
+/*
+ * Causes this character sequence to be replaced by the reverse of the sequence
+ */
+void str_reverse(str_t self);
+
+/*
+ * Exchanges the contents of the str1 with those of str2
+ */
+void str_swap(str_t str1, str_t str2);
+
+/*
+ * Sets the string value as the character array argument
  *
  * @Return value
  * 0 if successful, -1 otherwise
  */
-int str_writeToFile(str_t self, const char *path);
+int str_set(str_t self, const char *string);
 
 /*
- * Returns a pointer to a null-terminated character array
- * with data equivalent to those stored in the string
+ * Sets the string value as the formated character array argument
  *
+ * @Return value
+ * 0 if successful, -1 otherwise
  */
-char *str_cstr(str_t self);
+int str_setf(str_t self, const char *strformat, ... /* args */);
 
 /*
- * Changes each character to its corresponding uppercase value
- *
+ * Returns a substring [pos, pos + count).
+ * If the requested substring extends past the end of the string, or if count == npos,
+ * the returned substring is [pos, self->size).
  */
-void str_toupper(str_t self);
+str_t str_substr(str_t self, const int pos, const int count);
+
+/*
+ * Returns a copy of the string, with leading and trailing whitespace omitted
+ */
+str_t str_trim(str_t self);
 
 /*
  * Changes each character to its corresponding lowercase value
@@ -207,14 +208,17 @@ void str_toupper(str_t self);
 void str_tolower(str_t self);
 
 /*
- * Returns the char value at the specified pos
- *
- * @Return value
- * the char value at the specified pos if not successful,
- * -1 otherwise
- * The first char value is at index 0.
+ * Changes each character to its corresponding uppercase value
  *
  */
-char str_charAt(str_t self, int pos);
+void str_toupper(str_t self);
+
+/*
+ * Writes the string's value to the file named by path
+ *
+ * @Return value
+ * 0 if successful, -1 otherwise
+ */
+int str_writeToFile(str_t self, const char *path);
 
 #endif /* _NEOSTRING_H_ */
