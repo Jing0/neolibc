@@ -105,8 +105,10 @@ ini_t *ini_new(const char* filename) {
     }
 
     if (ini_read(fp, config) == -1) {
+        fclose(fp);
         return NULL;
     }
+    fclose(fp);
 
     return config;
 }
