@@ -11,18 +11,47 @@
 
 #include "neostring.h"
 
+#define CHECK_CAPACITY(len)                                     \
+    if (self->capacity <= len) {                                \
+        self->capacity = len + 16;                              \
+        char *tmpPtr = realloc(self->value, self->capacity);    \
+        if (tmpPtr == NULL) {                                   \
+            return -1;                                          \
+        }                                                       \
+        self->value = tmpPtr;                                   \
+    }                                                           \
+
+#define CHECK_ARG_POS(retval)                                         \
+    if (pos < 0) {                                              \
+        fprintf(stderr, "%s\n", "Error: \n\t"                   \
+                "The pos argument can't be less than 0");       \
+        return retval;                                              \
+    } else if (pos > self->size) {                              \
+        fprintf(stderr, "%s\n", "Error: \n\t"                   \
+                "The pos argument can't be greater than"        \
+                " the size of the string");                     \
+        return retval;                                              \
+    }                                                           \
+
+/* Initializes members of a string */
+static void str_init(str_t self);
+
+static void str_init(str_t self) {
+    self->value[0] = '\0';
+    self->size = 0;
+    self->capacity = INIT_CAPACITY;
+}
+
 str_t str_new(void) {
     str_t self = malloc(sizeof(str_s));
     if (self == NULL) {
         return NULL;
     }
-    self->capacity = INITSIZE;
-    self->value = malloc(self->capacity);
+    self->value = malloc(INIT_CAPACITY);
     if (self->value == NULL) {
         return NULL;
     }
-    self->value[0] = '\0';
-    self->size = 0;
+    str_init(self);
     return self;
 }
 
@@ -35,24 +64,13 @@ void str_destroy(str_t self) {
     }
 }
 
-/* TODO: deal with capacity */
 int str_append(str_t self, const char *str) {
     if (self == NULL || str == NULL) {
         return -1;
     }
 
     int len = self->size + strlen(str);
-    if (self->capacity <= len) {
-        self->capacity *= 2;
-        if (self->capacity <= len) {
-            self->capacity = len + 1;
-        }
-        char *tmpPtr = realloc(self->value, self->capacity);
-        if (tmpPtr == NULL) {
-            return -1;
-        }
-        self->value = tmpPtr;
-    }
+    CHECK_CAPACITY(len);
     strcpy(self->value + self->size, str);
     self->size = len;
     return 0;
@@ -63,15 +81,7 @@ char str_charAt(str_t self, int pos) {
         return -1;
     }
 
-    if (pos < 0) {
-        fprintf(stderr, "%s\n", "Error: \n\t"
-                "The pos argument can't be less than 0");
-        return -1;
-    } else if (pos > self->size) {
-        fprintf(stderr, "%s\n", "Error: \n\t"
-                "The pos argument can't be greater than the length of this sequence");
-        return -1;
-    }
+    CHECK_ARG_POS(-1);
     return self->value[pos];
 }
 
@@ -80,9 +90,7 @@ void str_clear(str_t self) {
         return;
     }
 
-    self->value[0] = '\0';
-    self->size = 0;
-    self->capacity = INITSIZE;
+    str_init(self);
 }
 
 str_t str_clone(const str_t self) {
@@ -119,11 +127,7 @@ int str_erase(str_t self, const int pos, const int count) {
         return -1;
     }
 
-    if (pos > self->size) {
-        fprintf(stderr, "%s\n", "Error: \n\t"
-                "The pos argument can't be greater than the length of this sequence");
-        return -1;
-    }
+    CHECK_ARG_POS(-1);
     str_t tmp = str_new();
     if (tmp == NULL) {
         return -1;
@@ -132,7 +136,6 @@ int str_erase(str_t self, const int pos, const int count) {
     self->value[pos] = '\0';
     self->size = pos;
     str_append(self, tmp->value);
-
     str_destroy(tmp);
     return 0;
 }
@@ -142,11 +145,7 @@ int str_findch(const str_t self, const char ch, const int pos) {
         return -1;
     }
 
-    if (pos > self->size) {
-        fprintf(stderr, "%s\n", "Error: \n\t"
-                "The pos argument can't be greater than the length of this sequence");
-        return -1;
-    }
+    CHECK_ARG_POS(-1);
     int i;
     for (i = 0; i < self->size; ++i) {
         if (self->value[pos + i] == ch) {
@@ -161,13 +160,9 @@ int str_findstr(const str_t self, const char *str, const int pos) {
         return -1;
     }
 
-    int index;
-    if (pos > self->size) {
-        fprintf(stderr, "%s\n", "Error: \n\t"
-                "The pos argument can't be greater than the length of this sequence");
-        return -1;
-    }
+    CHECK_ARG_POS(-1);
     char *p = strstr(self->value, str);
+    int index;
     if (p != NULL) {
         index = (int)p - (int)(self->value);
     } else {
@@ -177,7 +172,6 @@ int str_findstr(const str_t self, const char *str, const int pos) {
     return index;
 }
 
-/* TODO: deal with capacity */
 int str_insert(str_t self, const int offset, const char *str) {
     if (self == NULL || str == NULL) {
         return -1;
@@ -193,28 +187,17 @@ int str_insert(str_t self, const int offset, const char *str) {
         return -1;
     }
     int len = self->size + strlen(str);
-    if (self->capacity <= len) {
-        self->capacity *= 2;
-        if (self->capacity <= len) {
-            self->capacity = len + 1;
-        }
-        char *tmpPtr = realloc(self->value, self->capacity);
-        if (tmpPtr == NULL) {
-            return -1;
-        }
-        self->value = tmpPtr;
-    }
-    str_t lastpart = str_new();
-    if (lastpart == NULL) {
+    CHECK_CAPACITY(len);
+    str_t tmp = str_new();
+    if (tmp == NULL) {
         return -1;
     }
-    str_set(lastpart, self->value + offset);
+    str_set(tmp, self->value + offset);
     self->value[offset] = '\0';
     self->size = offset;
     str_append(self, str);
-    str_append(self, lastpart->value);
-
-    str_destroy(lastpart);
+    str_append(self, tmp->value);
+    str_destroy(tmp);
     return 0;
 }
 
@@ -273,35 +256,19 @@ int str_replace(str_t self, const int pos, const int count, const char *str) {
         return -1;
     }
 
-    if (pos < 0) {
-        fprintf(stderr, "%s\n", "Error: \n\t"
-                "The pos argument can't be less than 0");
-        return -1;
-    } else if (pos > self->size) {
-        fprintf(stderr, "%s\n", "Error: \n\t"
-                "The pos argument can't be greater than the length of this sequence");
-        return -1;
-    }
-    str_t replace = str_new();
-    if (replace == NULL) {
-        return -1;
-    }
-    str_set(replace, str);
-    int len = replace->size;
-    if (len > count) {
-        replace->value[count] = '\0';
-    }
+    CHECK_ARG_POS(-1);
     str_t tmp = str_new();
-    if (replace == NULL) {
+    if (tmp == NULL) {
         return -1;
     }
-    str_set(tmp, self->value + pos + count);
+    str_set(tmp, str);
+    if (tmp->size > count) {
+        tmp->value[count] = '\0';
+    }
+    str_append(tmp, self->value + pos + count);
     self->value[pos] = '\0';
     self->size = pos;
-    str_append(self, replace->value);
     str_append(self, tmp->value);
-
-    str_destroy(replace);
     str_destroy(tmp);
     return 0;
 }
@@ -342,17 +309,7 @@ int str_set(str_t self, const char *str) {
     }
 
     int len = strlen(str);
-    if (self->capacity <= len) {
-        self->capacity *= 2;
-        if (self->capacity <= len) {
-            self->capacity = len + 16;
-        }
-        char *tmpPtr = realloc(self->value, self->capacity);
-        if (tmpPtr == NULL) {
-            return -1;
-        }
-        self->value = tmpPtr;
-    }
+    CHECK_CAPACITY(len);
     strcpy(self->value, str);
     self->size = len;
     return 0;
@@ -364,17 +321,7 @@ int str_setf(str_t self, const char *strformat, ... /* args */) {
     }
 
     int len = strlen(strformat) + 16;
-    if (self->capacity <= len) {
-        self->capacity *= 2;
-        if (self->capacity <= len) {
-            self->capacity = len + 16;
-        }
-        char *tmpPtr = realloc(self->value, self->capacity);
-        if (tmpPtr == NULL) {
-            return -1;
-        }
-        self->value = tmpPtr;
-    }
+    CHECK_CAPACITY(len);
     va_list arg;
     int done;
     /* this is not entirely safe */
@@ -391,11 +338,7 @@ str_t str_substr(const str_t self, const int pos, const int count) {
         return NULL;
     }
 
-    if (pos > self->size) {
-        fprintf(stderr, "%s\n", "Error: \n\t"
-                "The pos argument can't be greater than the length of this sequence");
-        return NULL;
-    }
+    CHECK_ARG_POS(NULL);
     str_t tmp = str_new();
     if (tmp == NULL) {
         return NULL;
