@@ -59,7 +59,7 @@ void stack_pop(sta_t *s, void *returnAddress);
  * otherwise funky stuff will happen.
  * If you give the stack_new function sizeof(int) valueAddress should point to an int.
  */
-void stack_peek(sta_t *s, void *returnAddress);
+void stack_top(sta_t *s, void *returnAddress);
 
 #ifdef  __cplusplus
 }

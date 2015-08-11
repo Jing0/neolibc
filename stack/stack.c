@@ -45,7 +45,7 @@ void stack_pop(sta_t *s, void *returnAddress) {
     // Else error!
 }
 
-void stack_peek(sta_t *s, void *returnAddress) {
+void stack_top(sta_t *s, void *returnAddress) {
     if (s->size > 0) {
         void *source = (char *) s->elements + (s->size - 1) * s->elemSize; // Find the memory segment where to fetch the data from
         memcpy(returnAddress, source, s->elemSize); // Copy the data to the returnAddress
