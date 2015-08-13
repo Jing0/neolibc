@@ -13,24 +13,35 @@
 
 #define CHECK_CAPACITY(len)                                     \
     if (self->capacity <= len) {                                \
-        self->capacity = len + 16;                              \
+        self->capacity = len + CAPACITY_INCREMENT;              \
         char *tmpPtr = realloc(self->value, self->capacity);    \
         if (tmpPtr == NULL) {                                   \
             return -1;                                          \
         }                                                       \
         self->value = tmpPtr;                                   \
+        tmpPtr = NULL;                                          \
     }                                                           \
 
-#define CHECK_ARG_POS(retval)                                         \
+#define CHECK_ARG_SELF(retval)                                  \
+    if (self == NULL) {                                         \
+        return retval;                                          \
+    }                                                           \
+
+#define CHECK_ARG_STR(retval)                                   \
+    if (str == NULL) {                                          \
+        return retval;                                          \
+    }                                                           \
+
+#define CHECK_ARG_POS(retval)                                   \
     if (pos < 0) {                                              \
         fprintf(stderr, "%s\n", "Error: \n\t"                   \
                 "The pos argument can't be less than 0");       \
-        return retval;                                              \
+        return retval;                                          \
     } else if (pos > self->size) {                              \
         fprintf(stderr, "%s\n", "Error: \n\t"                   \
                 "The pos argument can't be greater than"        \
                 " the size of the string");                     \
-        return retval;                                              \
+        return retval;                                          \
     }                                                           \
 
 /* Initializes members of a string */
@@ -65,38 +76,31 @@ void str_destroy(str_t self) {
 }
 
 int str_append(str_t self, const char *str) {
-    if (self == NULL || str == NULL) {
-        return -1;
-    }
+    CHECK_ARG_SELF(-1);
+    CHECK_ARG_STR(-1);
 
     int len = self->size + strlen(str);
     CHECK_CAPACITY(len);
-    strcpy(self->value + self->size, str);
+    strncpy(self->value + self->size, str, self->capacity - self->size);
     self->size = len;
     return 0;
 }
 
-char str_charAt(str_t self, int pos) {
-    if (self == NULL) {
-        return -1;
-    }
-
+char str_charAt(const str_t self, int pos) {
+    CHECK_ARG_SELF(-1);
     CHECK_ARG_POS(-1);
+
     return self->value[pos];
 }
 
 void str_clear(str_t self) {
-    if (self == NULL) {
-        return;
-    }
+    CHECK_ARG_SELF();
 
     str_init(self);
 }
 
 str_t str_clone(const str_t self) {
-    if (self == NULL) {
-        return NULL;
-    }
+    CHECK_ARG_SELF(NULL);
 
     str_t clone = str_new();
     if (clone == NULL) {
@@ -114,20 +118,16 @@ int str_compare(const str_t str1, const str_t str2) {
     return strcmp(str1->value, str2->value);
 }
 
-char *str_cstr(const str_t self) {
-    if (self == NULL) {
-        return NULL;
-    }
+const char *str_cstr(const str_t self) {
+    CHECK_ARG_SELF(NULL);
 
     return self->value;
 }
 
 int str_erase(str_t self, const int pos, const int count) {
-    if (self == NULL) {
-        return -1;
-    }
-
+    CHECK_ARG_SELF(-1);
     CHECK_ARG_POS(-1);
+
     str_t tmp = str_new();
     if (tmp == NULL) {
         return -1;
@@ -135,17 +135,17 @@ int str_erase(str_t self, const int pos, const int count) {
     str_set(tmp, self->value + pos + count);
     self->value[pos] = '\0';
     self->size = pos;
-    str_append(self, tmp->value);
+    if (str_append(self, tmp->value) == -1) {
+        return -1;
+    }
     str_destroy(tmp);
     return 0;
 }
 
 int str_findch(const str_t self, const char ch, const int pos) {
-    if (self == NULL) {
-        return -1;
-    }
-
+    CHECK_ARG_SELF(-1);
     CHECK_ARG_POS(-1);
+
     int i;
     for (i = 0; i < self->size; ++i) {
         if (self->value[pos + i] == ch) {
@@ -156,11 +156,9 @@ int str_findch(const str_t self, const char ch, const int pos) {
 }
 
 int str_findstr(const str_t self, const char *str, const int pos) {
-    if (self == NULL) {
-        return -1;
-    }
-
+    CHECK_ARG_SELF(-1);
     CHECK_ARG_POS(-1);
+
     char *p = strstr(self->value, str);
     int index;
     if (p != NULL) {
@@ -168,14 +166,35 @@ int str_findstr(const str_t self, const char *str, const int pos) {
     } else {
         index = -1;
     }
-    free(p);
     return index;
 }
 
-int str_insert(str_t self, const int offset, const char *str) {
-    if (self == NULL || str == NULL) {
-        return -1;
+int str_hasPrefix(const str_t self, const char *str) {
+    CHECK_ARG_SELF(-1);
+    CHECK_ARG_STR(-1);
+
+    int index = str_findstr(self, str, 0);
+
+    return index == 0;
+}
+
+int str_hasSuffix(const str_t self, const char *str) {
+    CHECK_ARG_SELF(-1);
+    CHECK_ARG_STR(-1);
+
+    int i, len = strlen(str);
+    for (i = 0; i < len; ++i) {
+        if (str[i] != self->value[self->size - len + i]) {
+            return 0;
+        }
     }
+    return 1;
+}
+
+int str_insert(str_t self, const int offset, const char *str) {
+    CHECK_ARG_SELF(-1);
+    CHECK_ARG_STR(-1);
+
 
     if (offset < 0) {
         fprintf(stderr, "%s\n", "Error: \n\t"
@@ -195,40 +214,36 @@ int str_insert(str_t self, const int offset, const char *str) {
     str_set(tmp, self->value + offset);
     self->value[offset] = '\0';
     self->size = offset;
-    str_append(self, str);
-    str_append(self, tmp->value);
+    if (str_append(self, str) == -1) {
+        return -1;
+    }
+    if (str_append(self, tmp->value) == -1) {
+        return -1;
+    }
     str_destroy(tmp);
     return 0;
 }
 
 int str_isempty(const str_t self) {
-    if (self == NULL) {
-        return 1;
-    }
+    CHECK_ARG_SELF(1);
 
     return self->size == 0 ? 1 : 0;
 }
 
 uint16_t str_length(const str_t self) {
-    if (self == NULL) {
-        return -1;
-    }
+    CHECK_ARG_SELF(0);
 
     return self->size;
 }
 
 void str_print(const str_t self) {
-    if (self == NULL) {
-        return;
-    }
+    CHECK_ARG_SELF();
 
     printf("%s", self->value);
 }
 
 void str_println(const str_t self) {
-    if (self == NULL) {
-        return;
-    }
+    CHECK_ARG_SELF();
 
     printf("%s\n", self->value);
 }
@@ -245,18 +260,19 @@ int str_readFromFile(str_t self, const char *path) {
         return -1;
     }
     while (fgets(line, LINE_MAX - 1, fp) != NULL) {
-        str_append(self, line);
+        if (str_append(self, line) == -1) {
+            return -1;
+        }
     }
     fclose(fp);
     return 0;
 }
 
 int str_replace(str_t self, const int pos, const int count, const char *str) {
-    if (self == NULL || str == NULL) {
-        return -1;
-    }
-
+    CHECK_ARG_SELF(-1);
+    CHECK_ARG_STR(-1);
     CHECK_ARG_POS(-1);
+
     str_t tmp = str_new();
     if (tmp == NULL) {
         return -1;
@@ -265,18 +281,20 @@ int str_replace(str_t self, const int pos, const int count, const char *str) {
     if (tmp->size > count) {
         tmp->value[count] = '\0';
     }
-    str_append(tmp, self->value + pos + count);
+    if (str_append(tmp, self->value + pos + count) == -1) {
+        return -1;
+    }
     self->value[pos] = '\0';
     self->size = pos;
-    str_append(self, tmp->value);
+    if (str_append(self, tmp->value) == -1) {
+        return -1;
+    }
     str_destroy(tmp);
     return 0;
 }
 
 void str_reverse(str_t self) {
-    if (self == NULL) {
-        return;
-    }
+    CHECK_ARG_SELF();
 
     int len = self->size;
     int i;
@@ -303,19 +321,7 @@ void str_swap(str_t str1, str_t str2) {
     str_destroy(tmp);
 }
 
-int str_set(str_t self, const char *str) {
-    if (self == NULL || str == NULL) {
-        return -1;
-    }
-
-    int len = strlen(str);
-    CHECK_CAPACITY(len);
-    strcpy(self->value, str);
-    self->size = len;
-    return 0;
-}
-
-int str_setf(str_t self, const char *strformat, ... /* args */) {
+int str_set(str_t self, const char *strformat, ... /* args */) {
     if (self == NULL || strformat == NULL) {
         return -1;
     }
@@ -326,7 +332,9 @@ int str_setf(str_t self, const char *strformat, ... /* args */) {
     int done;
     /* this is not entirely safe */
     va_start (arg, strformat);
-    done = vsprintf (self->value, strformat, arg);
+    while ((done = vsnprintf (self->value, self->capacity, strformat, arg)) < 0) {
+        CHECK_CAPACITY(self->capacity + CAPACITY_INCREMENT);
+    }
     va_end (arg);
     self->size = strlen(self->value);
 
@@ -334,11 +342,9 @@ int str_setf(str_t self, const char *strformat, ... /* args */) {
 }
 
 str_t str_substr(const str_t self, const int pos, const int count) {
-    if (self == NULL) {
-        return NULL;
-    }
-
+    CHECK_ARG_SELF(NULL);
     CHECK_ARG_POS(NULL);
+
     str_t tmp = str_new();
     if (tmp == NULL) {
         return NULL;
@@ -349,33 +355,8 @@ str_t str_substr(const str_t self, const int pos, const int count) {
     return tmp;
 }
 
-str_t str_trim(const str_t self) {
-    if (self == NULL) {
-        return NULL;
-    }
-
-    int i = 0;
-    while (self->value[i] == ' ') {
-        ++i;
-    }
-    str_t tmp = str_new();
-    if (tmp == NULL) {
-        return NULL;
-    }
-    str_set(tmp, self->value + i);
-    i = tmp->size - 1;
-    while (tmp->value[i] == ' ') {
-        --i;
-    }
-    tmp->value[i + 1] = '\0';
-    tmp->size = i + 1;
-    return tmp;
-}
-
 void str_tolower(str_t self) {
-    if (self == NULL) {
-        return;
-    }
+    CHECK_ARG_SELF();
 
     int i;
     for (i = 0; i < self->size; ++i) {
@@ -384,14 +365,42 @@ void str_tolower(str_t self) {
 }
 
 void str_toupper(str_t self) {
-    if (self == NULL) {
-        return;
-    }
+    CHECK_ARG_SELF();
 
     int i;
     for (i = 0; i < self->size; ++i) {
         self->value[i] = toupper(self->value[i]);
     }
+}
+
+void str_trim(str_t self) {
+    CHECK_ARG_SELF();
+
+    int off = 0;
+    while (self->value[off] == ' ') {
+        ++off;
+    }
+    int i = self->size - 1;
+    while (self->value[i] == ' ') {
+        --i;
+    }
+    self->value[i + 1] = '\0';
+    self->size = i + 1 - off;
+    for (i = 0; i <= self->size; ++i) {
+        self->value[i] = self->value[i + off];
+    }
+}
+
+void str_trimToSize(str_t self) {
+    CHECK_ARG_SELF();
+
+    self->capacity = self->size + 16;
+    char *tmpPtr = realloc(self->value, self->capacity);
+    if (tmpPtr == NULL) {
+        return;
+    }
+    self->value = tmpPtr;
+    tmpPtr = NULL;
 }
 
 int str_writeToFile(const str_t self, const char *path) {
