@@ -47,8 +47,11 @@ int main(int argc, char const *argv[]) {
     printf("string size: %d\t", str_length(string));
     printf("string capacity: %d\n", string->capacity);
     str_set(string, "hello, world");
+    str_println(string);
+    printf("%d\n", string->size);
     printf("string has prefix ello?\t%s\n", str_hasPrefix(string, "ello") ? "Yes" : "No");
-    printf("string has prefix orld?\t%s\n", str_hasSuffix(string, "orld") ? "Yes" : "No");
+    printf("%d\n", string->size);
+    printf("string has suffix orld?\t%s\n", str_hasSuffix(string, "orld") ? "Yes" : "No");
     /* str_clone */
     str_t clone = str_clone(string);
     /* str_toupper */

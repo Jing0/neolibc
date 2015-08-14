@@ -12,23 +12,15 @@
 #ifndef _NEOSTRING_H
 #define _NEOSTRING_H
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <ctype.h>
-
-#define INIT_CAPACITY      256
-#define CAPACITY_INCREMENT 64
-#define LINE_MAX           128
 
 typedef struct str_s * str_t;
 
-typedef struct str_s {
+struct str_s {
     char *value;
-    uint16_t size;
-    uint16_t capacity;
-} str_s;
+    uint32_t size;
+    uint32_t capacity;
+};
 
 /* ==== Constructor and Destructor ==== */
 
@@ -47,7 +39,8 @@ void str_destroy(str_t self);
 /* ========== Methods Summary ========== */
 
 /*
- * Appends the string representation of the char array argument to this string
+ * Appends the string representation of the char array argument
+ * to this string
  *
  * @return
  * 0 if successful, -1 otherwise
@@ -84,7 +77,8 @@ str_t str_clone(const str_t self);
  *
  * @return
  * An integer greater than, equal to, or less than 0,
- * according as the string str1 is greater than, equal to, or less than the string str2
+ * according as the string str1 is greater than, equal to,
+ * or less than the string str2
  */
 int str_compare(const str_t str1, str_t str2);
 
@@ -93,7 +87,8 @@ int str_compare(const str_t str1, str_t str2);
  * with data equivalent to those stored in the string
  *
  * @return
- * A pointer point to a character array with data equivalent to those stored in the string
+ * A pointer point to a character array
+ * with data equivalent to those stored in the string
  */
 const char *str_cstr(const str_t self);
 
@@ -161,7 +156,7 @@ int str_isempty(const str_t self);
  * @return
  * The length of the sequence of characters represented by this string
  */
-uint16_t str_length(const str_t self);
+uint32_t str_length(const str_t self);
 
 /*
  * Prints the string
@@ -184,7 +179,8 @@ void str_println(const str_t self);
 int str_readFromFile(str_t self, const char *path);
 
 /*
- * Replaces the part of the string indicated by [pos, pos + count) with a new string
+ * Replaces the part of the string indicated by [pos, pos + count)
+ * with str
  *
  * @return
  * 0 if characters inserted successfully, -1 otherwise
@@ -196,12 +192,6 @@ int str_replace(str_t self, const int pos, const int count, const char *str);
  *
  */
 void str_reverse(str_t self);
-
-/*
- * Exchanges the contents of the str1 with those of str2
- *
- */
-void str_swap(str_t str1, str_t str2);
 
 /*
  * Sets the string value as the formated character array argument
@@ -219,6 +209,14 @@ int str_set(str_t self, const char *strformat, ... /* args */);
  * the returned substring is [pos, self->size).
  */
 str_t str_substr(const str_t self, const int pos, const int count);
+
+/*
+ * Exchanges the contents of the str1 with those of str2
+ *
+ * @return
+ * 0 if successful, -1 otherwise
+ */
+int str_swap(str_t str1, str_t str2);
 
 /*
  * Changes each character to its corresponding lowercase value
