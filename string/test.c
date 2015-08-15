@@ -13,10 +13,10 @@ int main(int argc, char const *argv[]) {
     str_reverse(string);
     str_println(string);
     /* str_length */
-    printf("size before trimming:\t%d\n", str_length(string));
+    printf("size before trimming:\t%zu\n", str_length(string));
     /* str_trim */
     str_trim(string);
-    printf("size after trimming:\t%d\n", str_length(string));
+    printf("size after trimming:\t%zu\n", str_length(string));
     /* str_substr */
     str_t substr = str_substr(string, 0, 3);
     printf("substr before swap:\t");
@@ -35,22 +35,22 @@ int main(int argc, char const *argv[]) {
 
     /* str_readFromFile */
     str_readFromFile(string, "neostring.c");
-    printf("string size: %d\t", str_length(string));
-    printf("string capacity: %d\n", string->capacity);
+    printf("string size: %zu\t", str_length(string));
+    printf("string capacity: %zu\n", string->capacity);
     str_set(string, "ok");
     printf("Before trimToSize():\n");
-    printf("string size: %d\t", str_length(string));
-    printf("string capacity: %d\n", string->capacity);
+    printf("string size: %zu\t", str_length(string));
+    printf("string capacity: %zu\n", string->capacity);
     /* str_trimToSize */
     str_trimToSize(string);
     printf("After trimToSize():\n");
-    printf("string size: %d\t", str_length(string));
-    printf("string capacity: %d\n", string->capacity);
+    printf("string size: %zu\t", str_length(string));
+    printf("string capacity: %zu\n", string->capacity);
     str_set(string, "hello, world");
     str_println(string);
-    printf("%d\n", string->size);
+    printf("%zu\n", string->size);
     printf("string has prefix ello?\t%s\n", str_hasPrefix(string, "ello") ? "Yes" : "No");
-    printf("%d\n", string->size);
+    printf("%zu\n", string->size);
     printf("string has suffix orld?\t%s\n", str_hasSuffix(string, "orld") ? "Yes" : "No");
     /* str_clone */
     str_t clone = str_clone(string);

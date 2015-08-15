@@ -237,7 +237,7 @@ int str_isempty(const str_t self) {
     return self->size == 0 ? 1 : 0;
 }
 
-uint32_t str_length(const str_t self) {
+size_t str_length(const str_t self) {
     CHECK_ARG(self, NULL, 0);
 
     return self->size;

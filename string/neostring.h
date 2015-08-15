@@ -17,9 +17,9 @@
 typedef struct str_s * str_t;
 
 struct str_s {
-    char *value;
-    uint32_t size;
-    uint32_t capacity;
+	char *value;
+	size_t size;
+	size_t capacity;
 };
 
 /* ==== Constructor and Destructor ==== */
@@ -156,7 +156,7 @@ int str_isempty(const str_t self);
  * @return
  * The length of the sequence of characters represented by this string
  */
-uint32_t str_length(const str_t self);
+size_t str_length(const str_t self);
 
 /*
  * Prints the string
